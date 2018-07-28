@@ -2,7 +2,8 @@
 #include <switch.h>
 
 extern short switch_input(void);
-extern void switch_flip(void *buf_ptr, int w, int h, int fps);
+extern void switch_set_video_mode(int w, int h);
+extern void switch_flip(void *buf_ptr, int w, int h, int fps, float vsps);
 
 extern void pcsx_rearmed_init(char *dir, int frameskip);
 extern bool pcsx_rearmed_load_game(char *path);

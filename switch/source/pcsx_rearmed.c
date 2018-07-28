@@ -9,6 +9,7 @@
 #include "new_dynarec/new_dynarec.h"
 #include "dfsound/spu_config.h"
 #include "dfinput/externals.h"
+#include "pixels_operation.h"
 #include <stdlib.h>
 #include <sys/time.h>
 
@@ -122,10 +123,12 @@ static void vout_close(void) {}
 static void vout_set_mode(int w, int h, int raw_w, int raw_h, int bpp) {
     vout_width = w;
     vout_height = h;
+    
+    switch_set_video_mode(w, h);
 }
 
 static void vout_flip(const void *vram, int stride, int bgr24, int w, int h) {
-    unsigned short *dest = vout_buf_ptr;
+    u32 *dest = vout_buf_ptr;
     const unsigned short *src = vram;
     int dstride = vout_width, h1 = h;
     
@@ -143,20 +146,17 @@ static void vout_flip(const void *vram, int stride, int bgr24, int w, int h) {
         vout_doffs_old = doffs;
     }
     dest += doffs;
-    
+
     if (bgr24) {
-        // XXX: could we switch to RETRO_PIXEL_FORMAT_XRGB8888 here?
-        for (; h1-- > 0; dest += dstride, src += stride) {
-            bgr888_to_rgb565(dest, src, w * 3);
-        }
+        // Not supported
     }
     else {
         for (; h1-- > 0; dest += dstride, src += stride) {
-            bgr555_to_rgb565(dest, src, w * 2);
+            bgr555_to_rgba8888(dest, src, w);
         }
     }
     
-    switch_flip(vout_buf_ptr, w, h, pl_rearmed_cbs.flips_per_sec);
+    switch_flip(vout_buf_ptr, w, h, pl_rearmed_cbs.flips_per_sec, pl_rearmed_cbs.vsps_cur);
     pl_rearmed_cbs.flip_cnt++;
 }
 
@@ -198,7 +198,7 @@ void pcsx_rearmed_init(char *dir, int frameskip) {
     };
     int ret = 0;
     
-    vout_buf = malloc(VOUT_MAX_WIDTH * VOUT_MAX_HEIGHT * 2);
+    vout_buf = malloc(VOUT_MAX_WIDTH * VOUT_MAX_HEIGHT * 4);
     vout_buf_ptr = vout_buf;
     
     ret = emu_core_preinit();
