@@ -54,9 +54,7 @@ void switch_set_video_mode(int w, int h) {
         _w = w;
         _h = h;
         
-        gfxExit();
-        gfxInitResolution(_w, _h);
-        gfxInitDefault();
+        gfxConfigureResolution(_w, _h);
     }
 }
 
