@@ -162,6 +162,10 @@ clean:
 	@echo clean ...
 	@rm -fr $(BUILD) $(TARGET).pfs0 $(TARGET).nso $(TARGET).nro $(TARGET).nacp $(TARGET).elf
 
+#---------------------------------------------------------------------------------
+zip:
+	@echo zip ...
+	@zip -r pcsx_rearmed.zip pcsx_rearmed.nro pcsx_rearmed.cfg
 
 #---------------------------------------------------------------------------------
 else
