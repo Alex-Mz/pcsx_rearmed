@@ -11,3 +11,9 @@ frontend/revision.h
 tools
 .pcsx/
 obj/
+*.elf
+*.nso
+*.pfs0
+*.nacp
+*.nro
+xcode/
