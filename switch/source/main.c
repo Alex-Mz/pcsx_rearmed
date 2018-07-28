@@ -41,6 +41,10 @@ short switch_input() {
     return result;
 }
 
+extern void* switch_fb(void) {
+    return gfxGetFramebuffer(NULL, NULL);
+}
+
 void switch_set_video_mode(int w, int h) {
     static int _w = 0, _h = 0;
     
@@ -58,13 +62,11 @@ void switch_set_video_mode(int w, int h) {
 
 void switch_flip(void *buf_ptr, int w, int h, int fps, float vsps) {
     u32 fbw;
-    u32 fbh;
-    u8 *fb = gfxGetFramebuffer(&fbw, &fbh);
     
-    memcpy(fb, buf_ptr, w * h * 4);
+    u8 *fb = gfxGetFramebuffer(&fbw, NULL);
     
     static char fps_str[32];
-    sprintf(fps_str, "fps: %i, vsps: %4.1f, time: %f", fps, vsps);
+    sprintf(fps_str, "fps: %i, vsps: %4.1f", fps, vsps);
     
     draw_string(fb, fbw, fps_str, 10, 10, 0xFF, 0xFF, 0xFF);
     

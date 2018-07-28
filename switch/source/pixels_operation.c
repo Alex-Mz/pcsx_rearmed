@@ -2,16 +2,28 @@
 #include "fontdata.h"
 #include <string.h>
 
+void bgr888_to_rgba8888(void *dst, const void *src, int bytes) {
+    u32 *d = dst;
+    const u8 *s = src;
+    
+    for (int x = 0; x < bytes; x++, s += 3, d++) {
+        u8 r = *(s + 0);
+        u8 g = *(s + 1);
+        u8 b = *(s + 2);
+        *d = RGBA8(r, g, b, 0xFF);
+    }
+}
+
 void bgr555_to_rgba8888(void *dst, const void *src, int bytes) {
     u32 *d = dst;
-    u16 *s = src;
+    const u16 *s = src;
     
     for (int x = 0; x < bytes; x++, s++, d++) {
         u16 color = *s;
-        u8 r = (color & 0x7C00) >> 10;
+        u8 r = (color & 0x1F);
         u8 g = (color & 0x3E0) >> 5;
-        u8 b = (color & 0x1F);
-        *d = RGBA8(b << 3, g << 3, r << 3, 0xFF);
+        u8 b = (color & 0x7C00) >> 10;
+        *d = RGBA8(r << 3, g << 3, b << 3, 0xFF);
     }
 }
 

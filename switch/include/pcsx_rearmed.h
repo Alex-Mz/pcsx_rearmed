@@ -2,6 +2,7 @@
 #include <switch.h>
 
 extern short switch_input(void);
+extern void* switch_fb(void);
 extern void switch_set_video_mode(int w, int h);
 extern void switch_flip(void *buf_ptr, int w, int h, int fps, float vsps);
 

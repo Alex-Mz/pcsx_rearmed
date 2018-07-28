@@ -30,17 +30,11 @@ int in_type[8] = {
     PSE_PAD_TYPE_NONE, PSE_PAD_TYPE_NONE,
     PSE_PAD_TYPE_NONE, PSE_PAD_TYPE_NONE };
 
-/* PSX max resolution is 640x512, but with enhancement it's 1024x512 */
-#define VOUT_MAX_WIDTH 1024
-#define VOUT_MAX_HEIGHT 512
-
 static int vout_width, vout_height;
 static int vout_doffs_old, vout_fb_dirty;
 static int plugins_opened = 0;
 static int is_pal = 0, frame_interval = 0, frame_interval1024 = 0;
 static int vsync_cnt = 0, vsync_usec_time = 0;
-static void *vout_buf;
-static void *vout_buf_ptr;
 
 #define tvdiff(tv, tv_old) \
     ((tv.tv_sec - tv_old.tv_sec) * 1000000 + tv.tv_usec - tv_old.tv_usec)
@@ -128,13 +122,13 @@ static void vout_set_mode(int w, int h, int raw_w, int raw_h, int bpp) {
 }
 
 static void vout_flip(const void *vram, int stride, int bgr24, int w, int h) {
-    u32 *dest = vout_buf_ptr;
+    u32 *dest = switch_fb();
     const unsigned short *src = vram;
     int dstride = vout_width, h1 = h;
     
     if (vram == NULL) {
         // blanking
-        memset(vout_buf_ptr, 0, dstride * h * 2);
+        memset(dest, 0, dstride * h * 2);
         return;
     }
     
@@ -142,13 +136,15 @@ static void vout_flip(const void *vram, int stride, int bgr24, int w, int h) {
     doffs += (dstride - w) / 2 & ~1;
     if (doffs != vout_doffs_old) {
         // clear borders
-        memset(vout_buf_ptr, 0, dstride * h * 2);
+        memset(dest, 0, dstride * h * 2);
         vout_doffs_old = doffs;
     }
     dest += doffs;
-
+    
     if (bgr24) {
-        // Not supported
+        for (; h1-- > 0; dest += dstride, src += stride) {
+            bgr888_to_rgba8888(dest, src, w);
+        }
     }
     else {
         for (; h1-- > 0; dest += dstride, src += stride) {
@@ -156,7 +152,7 @@ static void vout_flip(const void *vram, int stride, int bgr24, int w, int h) {
         }
     }
     
-    switch_flip(vout_buf_ptr, w, h, pl_rearmed_cbs.flips_per_sec, pl_rearmed_cbs.vsps_cur);
+    switch_flip(dest, w, h, pl_rearmed_cbs.flips_per_sec, pl_rearmed_cbs.vsps_cur);
     pl_rearmed_cbs.flip_cnt++;
 }
 
@@ -197,9 +193,6 @@ void pcsx_rearmed_init(char *dir, int frameskip) {
         "scph101", "scph7001", "scph5501", "scph1001"
     };
     int ret = 0;
-    
-    vout_buf = malloc(VOUT_MAX_WIDTH * VOUT_MAX_HEIGHT * 4);
-    vout_buf_ptr = vout_buf;
     
     ret = emu_core_preinit();
     
@@ -296,6 +289,4 @@ void pcsx_rearmed_stop() {
 
 void pcsx_rearmed_close() {
     SysClose();
-    free(vout_buf);
-    vout_buf = NULL;
 }
