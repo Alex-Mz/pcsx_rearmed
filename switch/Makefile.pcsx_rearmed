@@ -48,7 +48,6 @@ OBJS := ../libpcsxcore/cdriso.o \
 				../plugins/dfinput/main.o \
 				../plugins/dfinput/pad.o \
 				../plugins/dfinput/guncon.o \
-				../frontend/cspace.o \
 				../frontend/main.o \
 				../frontend/plugin.o
 
